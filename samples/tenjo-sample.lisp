@@ -21,10 +21,11 @@
       (* n (fact (1- n)))))
 
 (tenjo:defbench fib 100
-  (fib 35))
+  (fib 32))
 
 (tenjo:defbench fact 100
   (fact 4000))
 
 (tenjo:run-all-bench)
 
+(tenjo:dump-result)

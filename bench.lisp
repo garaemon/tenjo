@@ -76,7 +76,7 @@
       (error "You have to call defbench and run-all-bench")
       (with-open-file (f *logfile-name*
                          :direction :output
-                         :if-exists :append)
-        (format f "~s~%" f)
+                         :if-exists :append
+                         :if-does-not-exist :create)
+        (format f "~s~%" *benchmark-results*)
         *logfile-name*)))
-
