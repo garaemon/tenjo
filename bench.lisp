@@ -71,6 +71,21 @@
     (print-bench-result r))
   t)
 
+;; result format
+;; results := result result result ...
+;; result  := (stamp benchmark-results)
+;; stamp   := ((:date . date)
+;;             (:lisp-implementation . lisp-implementation))
+;; benchmark-results := (a-benchmark-result a-benchmark-result ...)
+;; a-benchmark-result := (bench-name
+;;                        (:real . real-time)
+;;                        (:user . user-time))
+;;
+;; sample
+;; (((:DATA . "2009-11-20-23-53-52")
+;;   (:LISP-IMPLEMENTATION . "SBCL 1.0.32.4"))
+;;  ((FIB (:REAL . 1281/20000) (:USER . 1593/25000))
+;;   (FACT (:REAL . 1373/100000) (:USER . 17/1250))))
 (defun dump-result ()
   (if (null *benchmark-results*)
       (error "You have to call defbench and run-all-bench")
@@ -78,5 +93,11 @@
                          :direction :output
                          :if-exists :append
                          :if-does-not-exist :create)
-        (format f "~s~%" *benchmark-results*)
+        (let ((stamp (list (cons :data (chimi:local-time-string))
+                           (cons :lisp-implementation
+                                 (concatenate 'string
+                                              (lisp-implementation-type)
+                                              " "
+                                              (lisp-implementation-version))))))
+          (format f "~s~%" (list stamp *benchmark-results*)))
         *logfile-name*)))
