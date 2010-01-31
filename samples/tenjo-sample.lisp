@@ -29,3 +29,5 @@
 (tenjo:run-all-bench)
 
 (tenjo:dump-result)
+
+(tenjo:show-result :log-file "sample.log")

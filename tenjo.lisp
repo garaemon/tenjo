@@ -10,5 +10,6 @@
            #:init-bench
            #:run-all-bench
            #:dump-result
-           #:show-result))
+           #:show-result
+           #:visualize-bench-result))
 

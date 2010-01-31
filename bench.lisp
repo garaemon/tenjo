@@ -91,7 +91,7 @@
                          :direction :output
                          :if-exists :append
                          :if-does-not-exist :create)
-        (let ((stamp (list (cons :data (chimi:local-time-string))
+        (let ((stamp (list (cons :date (chimi:local-time-string))
                            (cons :lisp-implementation
                                  (lisp-implementation-type))
                            (cons :version
@@ -99,6 +99,57 @@
           (format f "~s~%" (list stamp *benchmark-results*)))
         *logfile-name*)))
 
+;; print results like below
+;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; <FIB>
+;; DATE                    USER            REAL
+;; ---------------------------------------------
+;; 2010-01-01-00-00-00      1.0            1.0
+;; 2010-01-01-00-00-00      1.0            1.0
+;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; <FACT>
+;; DATE                    USER            REAL
+;; ---------------------------------------------
+;; 2010-01-01-00-00-00      1.0            1.0
+;; 2010-01-01-00-00-00      1.0            1.0
+
+(defun show-result (&key (log-file nil))
+  ;; error check
+  (if (null log-file) (error "You have to specify :log-file keyword"))
+  (let ((results (chimi:read-from-file log-file)))
+    (let ((all-tests
+           (remove-duplicates
+            (mapcan #'(lambda (x) (mapcar #'car (cadr x))) results))))
+      (dolist (target-test all-tests)
+        (show-one-result target-test results)))))
+
+(defun show-one-result (target results)
+  (format t ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;~%")
+  (format t "<~A>~%" target)
+  (format t "      DATE              USER     REAL~%")
+  (format t "-----------------------------------------------~%")
+  (let ((date-user-reals
+         (mapcar #'(lambda (r)
+                     (if (member target (mapcar #'car (cadr r)))
+                         (list (assoc-ref :date (car r))
+                               (assoc-ref
+                                :user
+                                (cdr (find-if #'(lambda (x) (eq (car x) target))
+                                              (cadr r))))
+                               (assoc-ref
+                                :real
+                                (cdr (find-if #'(lambda (x) (eq (car x) target))
+                                              (cadr r)))))
+                         nil))
+                     results)))
+    (dolist (r date-user-reals)
+      (format t "~A ~8,2f ~8,2f~%" (car r) (cadr r) (caddr r)))
+    (format t "~%")
+    ))
+
+;; it requires gnuplot
 (defun visualize-bench-result (&key
                                (max-length 10)
                                (log-file-name *logfile-name*)
