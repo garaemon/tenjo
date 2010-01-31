@@ -6,6 +6,7 @@
 
 (in-package :tenjo)
 
+;; global symbols to store test results
 (defvar *benchmarks* nil)
 (defvar *benchmark-results* nil)
 (defvar *logfile-name* nil)
@@ -37,8 +38,10 @@
       (funcall func))
     (let ((after-user (get-internal-run-time))
           (after-real (get-internal-real-time)))
-      (let ((real (/ (- after-real before-real) internal-time-units-per-second))
-            (user (/ (- after-user before-user) internal-time-units-per-second)))
+      (let ((real (/ (- after-real before-real)
+                     internal-time-units-per-second))
+            (user (/ (- after-user before-user)
+                     internal-time-units-per-second)))
         (push (cons name
                     (list (cons :real (/ real sampling))
                           (cons :user (/ user sampling))))
@@ -81,11 +84,6 @@
 ;;                        (:real . real-time)
 ;;                        (:user . user-time))
 ;;
-;; sample
-;; (((:DATA . "2009-11-20-23-53-52")
-;;   (:LISP-IMPLEMENTATION . "SBCL 1.0.32.4"))
-;;  ((FIB (:REAL . 1281/20000) (:USER . 1593/25000))
-;;   (FACT (:REAL . 1373/100000) (:USER . 17/1250))))
 (defun dump-result ()
   (if (null *benchmark-results*)
       (error "You have to call defbench and run-all-bench")
@@ -95,9 +93,26 @@
                          :if-does-not-exist :create)
         (let ((stamp (list (cons :data (chimi:local-time-string))
                            (cons :lisp-implementation
-                                 (concatenate 'string
-                                              (lisp-implementation-type)
-                                              " "
-                                              (lisp-implementation-version))))))
+                                 (lisp-implementation-type))
+                           (cons :version
+                                 (lisp-implementation-version)))))
           (format f "~s~%" (list stamp *benchmark-results*)))
         *logfile-name*)))
+
+(defun visualize-bench-result (&key
+                               (max-length 10)
+                               (log-file-name *logfile-name*)
+                               (target-implementations
+                                (list (lisp-implementation-type))))
+  (let ((datum nil))
+    ;; read log
+    (with-open-file (f log-file-name :direction :input)
+      (let ((r nil))
+        (while (setq r (read f nil nil))
+          (push r datum))))
+    ;; reverse
+    (setq datum (reverse datum))
+    ;; draw graph
+    )
+  )
+
